@@ -1,25 +1,33 @@
 # Clock
 
-One sentence saying what the app does, for the person who will use it.
+A full-screen clock with ten faces you can switch between, for a desk or an always-on screen. It shows the viewer's own device time.
+
+| Face | 中文 | Look |
+| --- | --- | --- |
+| Minimal | 极简 | quiet analog dial, sweeping orange seconds hand |
+| Station | 车站钟 | railway dial; the red disc sweeps in 58.5 s, waits at 12, the minute hand jumps |
+| Flip | 翻页 | split-flap cards that fold over each second |
+| Neon | 霓虹 | glowing seven-segment digits |
+| Nixie | 辉光管 | glass tubes with stacked numerals, one lit orange |
+| Words | 文字 | a letter grid that spells the time in five-minute steps (English and Chinese grids) |
+| Rings | 圆环 | three arcs that fill through the hour, the minute and the day |
+| Binary | 二进制 | each digit as a column of bits |
+| Type | 大字 | one huge thin time, the date and how much of the day has gone |
+| Tape | 滚轮 | number tapes rolling under a reading band |
 
 ## Use
 
-- Open the app at its public URL (set as `url:` in `space.yaml`), or on the host at `http://127.0.0.1:9190`.
-- The panel shows the `latest` widget and lets you chat with the `assistant` agent.
+- ← / → or swipe to switch faces; the face name or the grid button (or `G`) opens the gallery with live previews.
+- `24h` / `12h`, seconds on or off, full screen (`F` or double-click), theme (system / light / dark) and 中 / EN are in the toolbar, which hides itself after a few seconds; move the mouse or tap to bring it back.
+- Every choice is remembered in the browser. A kiosk can pin them in the URL: `/?face=flip&h24=0&seconds=0&theme=dark&lang=zh`.
+- While the page is visible it asks the browser to keep the screen awake.
 
 ## Run locally
 
 ```bash
 bun install
-cp .env.example .env      # fill in real values; never commit .env
 PORT=9190 bun src/index.ts
-curl -s http://127.0.0.1:9190/healthz
+bun run check
 ```
 
-Inside an ai-space workspace the provisioned variables (`DATABASE_URL`, `BLOB_URL`, ...) come from `<workspace>/data/clock/space.env`. For local development against the same values: `eval "$(bun <ai-space>/src/index.ts env clock)"`.
-
-## Deploy
-
-`DEPLOY_HOST=<ssh host> ./deploy.sh` syncs the checkout into `<workspace>/apps/clock`, installs the user-level systemd unit and checks `/healthz`. The workspace is `SPACE_HOME` when explicitly set, otherwise the target machine's installed ai-space unit's `SPACE_HOME`, otherwise `~/.ai-space` on that machine. `SPACE_HOME=/srv/space` selects a custom workspace; `DEPLOY_PATH` can independently override the app checkout. Relative paths and `~/` resolve under the remote user's home. The app unit reads provisioned variables from the selected workspace's `data/clock/space.env`. See [AGENTS.md](AGENTS.md) for the host details once it is live.
-
-This is an [ai-space](https://github.com/Zhang-Shubo/ai-space) app; the contract is its `docs/app-spec.md`.
+See [AGENTS.md](AGENTS.md) for the host and deploy channel. This is an [ai-space](https://github.com/Zhang-Shubo/ai-space) app; the contract is its `docs/app-spec.md`.

@@ -4,53 +4,47 @@ Read this before touching code. Users read [README.md](README.md). This reposito
 
 ## Rules
 
-1. **Be honest.** Data you cannot obtain stays empty or is marked missing; `/api/widget` returns `{ ok: false, error }` on failure and the panel shows it as is.
-2. **Traceable.** Every record answers "where from, when".
-3. **Append, never rewrite.** History is added to, not edited.
-4. **Configuration is environment.** Real values live in `.env` (ignored) or in the `space.env` ai-space generates; the repository holds only `.env.example`.
-5. **Loopback only.** The service binds `127.0.0.1:${PORT}`; exposure is the space's job.
-6. **Pages keep the three page rules** (ai-space `docs/app-spec.md#app-pages`): full-bleed (the layout fills the window, no outer border, card, radius or padding around the app); Chinese and English for every visible string with a visible 中 / EN switch, following `?lang=` (manifest `url` with `{lang}`), then the saved choice, then the browser; a theme button cycling system → light → dark, saved and applied in `<head>` before the first paint. Check each page at 1440 px and 375 px, in both languages and both themes.
-7. **Pages load the space's scripts**: `/_space/usage.js` (time in use) and `/_space/feedback.js` (the Fix this button) in every page's `<head>`, added at runtime when a bundler builds the page (ai-space `docs/app-spec.md#usage`, `#fix-this`). What a person sends with it becomes an ai-todo task that the Fix Engineer fixes by this file, so keep its rules, checks and deploy channel current.
-8. **Portable.** Skills and prompts name no host, ssh alias or home directory and carry no "am I on the server" marker; they take paths from the environment (`SPACE_APP_DIR`, `SPACE_APP_DATA_DIR`, `DATABASE_URL`) and the machine from the workspace `AGENTS.md`. Deployment facts live in the Deployment section below and nowhere else.
+1. **The viewer's time.** Every face shows the device's local time and timezone; the server keeps no state and sends no time.
+2. **Faces are self-sizing.** A face draws into a size container and uses `cq` units only, so the same code draws the full screen and the gallery thumbnails. Never size a face with `vw`/`vh` or fixed pixels.
+3. **Loopback only, allowlist only.** The service binds `127.0.0.1:${PORT}` and serves only the files in `src/app.ts` `STATIC`; add a new web file there (and to `src/app.test.ts`).
+4. **Pages keep the three page rules** (ai-space `docs/app-spec.md#app-pages`): full-bleed; every string from the `zh`/`en` dictionary in `web/app.js` with the 中 / EN switch, following `?lang=`, then the saved choice, then the browser; a theme button cycling system → light → dark, applied in `<head>` before the first paint. Every face has a light and a dark token set in `web/app.css` (the dark set is written twice: system dark and `[data-theme="dark"]`). Check at 1440 px and 375 px, both languages, both themes.
+5. **Pages load the space's scripts**: `/_space/usage.js` and `/_space/feedback.js` in `<head>` (checked by `src/app.test.ts`).
+6. **No build step, no runtime dependency.** `web/` is plain ES modules served as is.
 
 ## Stack and runtime model
 
-- Bun + TypeScript, `src/index.ts` is the whole service (`Bun.serve`, `bun:sqlite`).
-- Runs as the user-level systemd unit `clock` from `<workspace>/apps/clock`, port 9190, health `GET /healthz`. Deployment resolves the workspace from explicit `SPACE_HOME`, then the target ai-space unit, then the remote `~/.ai-space` default.
-- Storage and notifications are declared in `space.yaml` and reach the process as environment variables.
+- Bun + TypeScript service: `src/index.ts` boots `Bun.serve` (idle timeout 30 s), `src/app.ts` routes.
+- `web/index.html` page shell; `web/app.js` settings (localStorage `clock.*`, overridable by `?face=&h24=&seconds=&theme=&lang=`), toolbar, gallery, frame loop, screen wake lock; `web/faces.js` the ten faces, each `{ id, name, mount(root, ctx) -> { update(now) } }`; `web/words.js` word-clock grids and lighting rule (pure, tested); `web/app.css` tokens, chrome and one block per face.
 
 ## Directory map
 
 ```
-space.yaml           * the manifest: identity, service, agents, widgets, tasks, storage, notify
-src/index.ts         * the service: /healthz, /api/widget, /jobs/refresh, SIGTERM handling
-agents/assistant.md    system prompt of the `assistant` agent
-prompts/               prompt files for scheduled agent tasks
-deploy/app.service     user-level systemd unit template (@DIR@ and @SPACE_HOME@ substituted by deploy.sh)
-deploy.sh              rsync, install the unit, restart, health check (no sudo)
-icon.svg               panel icon, 64x64 viewBox
-.env.example           every variable the service reads
+space.yaml           * manifest: identity, service, deploy checks
+src/index.ts           boot, SIGTERM
+src/app.ts           * routes (allowlist)
+src/*.test.ts          routes; word clock grids and phrases
+web/faces.js         * the faces; to add one, append to FACES and add its CSS block and light/dark tokens
+web/words.js           word clock grids (EN 12x9, ZH 6x5)
+web/app.js / app.css   page logic and styles
+deploy/post-receive    bare-repository hook on the host
+icon.svg               panel icon and favicon
 ```
 
 ## Conventions
 
-- Widget contract: `GET /api/widget` -> `{ ok: true, items: [{ text, url, time }] }`, at most twenty items, newest first.
-- Task endpoints (`/jobs/*`) do one round of work and answer `{ status: "ok" | "error" | "skipped", error? }`.
-- Commit messages follow Conventional Commits.
-- Time handling follows ai-space `docs/time.md`: distinguish instants, calendar dates and zoned local times; declare cron zones and share user-timezone context across web, CLI and AI. Read that document before changing time-related behavior.
+- Code, comments, docs and commits in English; UI strings in the dictionary. Commits follow Conventional Commits.
 
 ## Commands
 
 ```bash
 bun install
 PORT=9190 bun src/index.ts
-bun test
-DEPLOY_HOST=<host> ./deploy.sh
+bun run check                    # typecheck + tests
 ```
 
 ## Environment variables
 
-See `.env.example`. Provided by ai-space: `PORT`, `SPACE_APP`, `SPACE_APP_DIR`, `SPACE_APP_DATA_DIR`, `SPACE_API_URL`, `SPACE_APP_TOKEN`, plus `DATABASE_URL` / `BLOB_URL` when declared.
+Provided by ai-space: `PORT`. Nothing else is read.
 
 ## Deployment
 
@@ -63,4 +57,4 @@ See `.env.example`. Provided by ai-space: `PORT`, `SPACE_APP`, `SPACE_APP_DIR`, 
 
 ## Known pitfalls
 
-- Record every trap the moment it is hit; this section is the one that pays for itself.
+- The flip face swaps the lower half's text on the lower leaf's `animationend`; reduced motion shortens the animation instead of removing it, or the lower half would never update.

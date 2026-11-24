@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#0e0e11" />
+  <title>Clock</title>
+  <link rel="icon" href="/icon.svg" type="image/svg+xml" />
+  <script>
+    (function () {
+      var d = document.documentElement, q = new URLSearchParams(location.search);
+      var get = function (k) { try { return localStorage.getItem(k); } catch (e) { return null; } };
+      var t = q.get("theme") || get("clock.theme");
+      if (t === "light" || t === "dark") d.dataset.theme = t;
+      var l = q.get("lang") || get("clock.lang") ||
+        ((navigator.languages || [navigator.language]).find(function (x) { return /^(zh|en)/i.test(x); }) || "en");
+      d.lang = /^zh/i.test(l) ? "zh-CN" : "en";
+    })();
+  </script>
+  <link rel="stylesheet" href="/app.css" />
+  <script src="/_space/usage.js" defer></script>
+  <script src="/_space/feedback.js" defer></script>
+</head>
+<body>
+  <main id="stage" class="stage" aria-live="off"></main>
+
+  <header id="bar" class="bar">
+    <div class="bar-face">
+      <button class="icon-btn" id="prev" type="button" data-i18n-label="prev">
+        <svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7" /></svg>
+      </button>
+      <button class="face-name" id="faceName" type="button" data-i18n-label="styles"></button>
+      <button class="icon-btn" id="next" type="button" data-i18n-label="next">
+        <svg viewBox="0 0 24 24"><path d="M9 5l7 7-7 7" /></svg>
+      </button>
+    </div>
+    <div class="bar-tools">
+      <button class="icon-btn" id="openGallery" type="button" data-i18n-label="styles">
+        <svg viewBox="0 0 24 24"><rect x="4" y="4" width="6.5" height="6.5" rx="1.5" /><rect x="13.5" y="4" width="6.5" height="6.5" rx="1.5" /><rect x="4" y="13.5" width="6.5" height="6.5" rx="1.5" /><rect x="13.5" y="13.5" width="6.5" height="6.5" rx="1.5" /></svg>
+      </button>
+      <button class="text-btn" id="h24" type="button" data-i18n-label="h24"></button>
+      <button class="text-btn" id="secs" type="button" data-i18n-label="seconds"></button>
+      <button class="icon-btn" id="fullscreen" type="button" data-i18n-label="fullscreen">
+        <svg viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5" /></svg>
+      </button>
+      <button class="icon-btn" id="theme" type="button"></button>
+      <button class="text-btn" id="lang" type="button" data-i18n-label="lang"></button>
+    </div>
+  </header>
+
+  <section id="gallery" class="gallery" hidden>
+    <div class="gallery-head">
+      <h1 data-i18n="galleryTitle"></h1>
+      <span class="gallery-hint" data-i18n="hint"></span>
+      <button class="icon-btn" id="closeGallery" type="button" data-i18n-label="close">
+        <svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18" /></svg>
+      </button>
+    </div>
+    <div class="gallery-grid" id="galleryGrid"></div>
+  </section>
+
+  <script type="module" src="/app.js"></script>
+</body>
+</html>

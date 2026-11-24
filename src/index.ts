@@ -1,65 +1,19 @@
 /**
- * Minimal ai-space app service. Contract (docs/app-spec.md, "service"):
- * read PORT, bind 127.0.0.1 only, answer GET /healthz with 200, log to stdout,
- * exit on SIGTERM within 10 seconds. Replace the handlers, keep the contract.
+ * The service: the clock page and /healthz. Binds 127.0.0.1 only; the space router stands in front.
+ * The clock runs in the browser on the viewer's own time, so the server keeps no state.
  */
+
+import { handle } from "./app.ts";
 
 const port = Number(process.env.PORT ?? 9190);
-const publicBase = (process.env.PUBLIC_BASE ?? "").replace(/\/$/, "");
-
-type WidgetItem = { text: string; url?: string; time?: string };
-
-/** Widget feed: at most twenty items, newest first. Return { ok: false, error } when the data is unavailable. */
-async function widget(): Promise<{ ok: true; items: WidgetItem[] } | { ok: false; error: string }> {
-  return { ok: true, items: [{ text: "Hello from clock", url: publicBase || undefined, time: new Date().toISOString() }] };
-}
-
-/** One round of work for the `refresh` task. Report honestly; the scheduler records the verdict. */
-async function refresh(): Promise<{ status: "ok" | "error" | "skipped"; error?: string }> {
-  return { status: "ok" };
-}
-
-/**
- * The app's page. The heartbeat script lets the space count the time the page is in use
- * (ai-space docs/usage.md), and the feedback script adds the space's Fix this button
- * (docs/feedback.md); keep both lines in every page the app serves.
- */
-const page = `<!doctype html>
-<html>
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>clock</title>
-    <script src="/_space/usage.js" defer></script>
-    <script src="/_space/feedback.js" defer></script>
-  </head>
-  <body>
-    <h1>clock</h1>
-  </body>
-</html>
-`;
-
-const json = (body: unknown, status = 200) =>
-  new Response(JSON.stringify(body), { status, headers: { "content-type": "application/json; charset=utf-8" } });
-
-const server = Bun.serve({
-  hostname: "127.0.0.1",
-  port,
-  routes: {
-    "/": () => new Response(page, { headers: { "content-type": "text/html; charset=utf-8" } }),
-    "/healthz": () => new Response("ok"),
-    "/api/widget": async () => json(await widget()),
-    "/jobs/refresh": { POST: async () => json(await refresh()) },
-  },
-  fetch: () => new Response("not found", { status: 404 }),
-});
-
+// idleTimeout: Bun closes idle connections after 10 s by default; static files need no more than 30
+const server = Bun.serve({ hostname: "127.0.0.1", port, idleTimeout: 30, fetch: handle });
 console.log(`[clock] listening on http://127.0.0.1:${server.port}`);
 
 for (const signal of ["SIGTERM", "SIGINT"] as const) {
   process.on(signal, () => {
     console.log(`[clock] ${signal}, shutting down`);
     server.stop();
-    setTimeout(() => process.exit(0), 8_000).unref();
+    process.exit(0);
   });
 }
