@@ -6,6 +6,7 @@ description: A full-screen clock with ten switchable faces (analog, station, fli
 icon: icon.svg
 url: /?lang={lang}
 status: active
+repo: https://github.com/ericz-lab/clock.git
 i18n:
   zh:
     title: 时钟

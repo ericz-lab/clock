@@ -31,4 +31,8 @@ PORT=9190 bun src/index.ts
 bun run check
 ```
 
-See [AGENTS.md](AGENTS.md) for the host and deploy channel. This is an [ai-space](https://github.com/Zhang-Shubo/ai-space) app; the contract is its `docs/app-spec.md`.
+See [AGENTS.md](AGENTS.md) for the deploy channel. This is an [ai-space](https://github.com/ericz-lab/ai-space) app; the contract is its `docs/app-spec.md`. It also runs on its own: `bun src/index.ts` serves the page on `127.0.0.1:${PORT:-9190}`.
+
+## License
+
+[MIT](LICENSE)
