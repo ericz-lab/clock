@@ -10,7 +10,7 @@ test("healthz", async () => {
 });
 
 test("serves the page and its scripts", async () => {
-  for (const path of ["/", "/app.css", "/app.js", "/faces.js", "/words.js", "/icon.svg"]) {
+  for (const path of ["/", "/app.css", "/app.js", "/faces.js", "/words.js", "/zones.js", "/icon.svg"]) {
     expect((await get(path)).status).toBe(200);
   }
   const html = await (await get("/")).text();

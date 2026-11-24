@@ -4,7 +4,7 @@ Read this before touching code. Users read [README.md](README.md). This reposito
 
 ## Rules
 
-1. **The viewer's time.** Every face shows the device's local time and timezone; the server keeps no state and sends no time.
+1. **The viewer's time.** The instant is the device's clock; a city's wall time comes from its IANA zone through `Intl` in `web/zones.js`. Faces read only `getHours/getMinutes/getSeconds/getMilliseconds` of the `ZonedTime` they are given and format dates through `ctx.date`, never `new Date()` fields, or a city would show local time. The server keeps no state and sends no time.
 2. **Faces are self-sizing.** A face draws into a size container and uses `cq` units only, so the same code draws the full screen and the gallery thumbnails. Never size a face with `vw`/`vh` or fixed pixels.
 3. **Loopback only, allowlist only.** The service binds `127.0.0.1:${PORT}` and serves only the files in `src/app.ts` `STATIC`; add a new web file there (and to `src/app.test.ts`).
 4. **Pages keep the three page rules** (ai-space `docs/app-spec.md#app-pages`): full-bleed; every string from the `zh`/`en` dictionary in `web/app.js` with the 中 / EN switch, following `?lang=`, then the saved choice, then the browser; a theme button cycling system → light → dark, applied in `<head>` before the first paint. Every face has a light and a dark token set in `web/app.css` (the dark set is written twice: system dark and `[data-theme="dark"]`). Check at 1440 px and 375 px, both languages, both themes.
@@ -14,7 +14,7 @@ Read this before touching code. Users read [README.md](README.md). This reposito
 ## Stack and runtime model
 
 - Bun + TypeScript service: `src/index.ts` boots `Bun.serve` (idle timeout 30 s), `src/app.ts` routes.
-- `web/index.html` page shell; `web/app.js` settings (localStorage `clock.*`, overridable by `?face=&h24=&seconds=&theme=&lang=`), toolbar, gallery, frame loop, screen wake lock; `web/faces.js` the ten faces, each `{ id, name, mount(root, ctx) -> { update(now) } }`; `web/words.js` word-clock grids and lighting rule (pure, tested); `web/app.css` tokens, chrome and one block per face.
+- `web/index.html` page shell; `web/app.js` settings (localStorage `clock.*`, overridable by `?face=&h24=&seconds=&theme=&lang=`), toolbar, gallery, frame loop, screen wake lock; `web/faces.js` the ten faces, each `{ id, name, mount(root, ctx) -> { update(now) } }`; `web/words.js` word-clock grids and lighting rule (pure, tested); `web/zones.js` city catalog, zone offsets (looked up once a minute per zone), `ZonedTime`, relation to local time, city search (pure, tested); the world view (tiles, picker, city tag) lives in `web/app.js`, cities in localStorage `clock.cities` (ids: `local`, a catalog id, or an IANA zone); `web/app.css` tokens, chrome and one block per face.
 
 ## Directory map
 
@@ -22,9 +22,10 @@ Read this before touching code. Users read [README.md](README.md). This reposito
 space.yaml           * manifest: identity, service, deploy checks
 src/index.ts           boot, SIGTERM
 src/app.ts           * routes (allowlist)
-src/*.test.ts          routes; word clock grids and phrases
+src/*.test.ts          routes; word clock grids and phrases; zones
 web/faces.js         * the faces; to add one, append to FACES and add its CSS block and light/dark tokens
 web/words.js           word clock grids (EN 12x9, ZH 6x5)
+web/zones.js           world clock: cities, zone offsets, ZonedTime
 web/app.js / app.css   page logic and styles
 deploy/post-receive    bare-repository hook on the host
 icon.svg               panel icon and favicon

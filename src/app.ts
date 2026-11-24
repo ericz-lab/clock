@@ -12,6 +12,7 @@ const STATIC: Record<string, { file: string; type: string }> = {
   "/app.js": { file: "web/app.js", type: "text/javascript; charset=utf-8" },
   "/faces.js": { file: "web/faces.js", type: "text/javascript; charset=utf-8" },
   "/words.js": { file: "web/words.js", type: "text/javascript; charset=utf-8" },
+  "/zones.js": { file: "web/zones.js", type: "text/javascript; charset=utf-8" },
   "/icon.svg": { file: "icon.svg", type: "image/svg+xml" },
   "/favicon.svg": { file: "icon.svg", type: "image/svg+xml" },
 };

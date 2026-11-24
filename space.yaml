@@ -2,14 +2,14 @@
 spec: 1
 name: clock
 title: Clock
-description: A full-screen clock with ten switchable faces (analog, station, flip, neon, nixie, word, rings, binary, type and tape) for a desk or an always-on screen.
+description: A full-screen clock with ten switchable faces (analog, station, flip, neon, nixie, word, rings, binary, type and tape) for a desk or an always-on screen, and a world clock for any city.
 icon: icon.svg
 url: /?lang={lang}
 status: active
 i18n:
   zh:
     title: 时钟
-    description: 全屏时钟，可切换十种表盘（极简指针、车站钟、翻页、霓虹、辉光管、文字、圆环、二进制、大字和滚轮），适合桌面或常亮屏。
+    description: 全屏时钟，可切换十种表盘（极简指针、车站钟、翻页、霓虹、辉光管、文字、圆环、二进制、大字和滚轮），适合桌面或常亮屏，并支持任意城市的世界时钟。
 
 # The app's own process. ai-space hands over PORT; the process binds 127.0.0.1 only.
 service:
