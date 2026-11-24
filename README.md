@@ -23,6 +23,10 @@ A full-screen clock with ten faces you can switch between, for a desk or an alwa
 - Every choice is remembered in the browser. A kiosk can pin them in the URL: `/?face=flip&h24=0&seconds=0&theme=dark&lang=zh`, one city with `&zone=tokyo` (or `&zone=Asia/Tokyo`), a wall of cities with `&view=world&cities=local,newyork,london,tokyo`.
 - While the page is visible it asks the browser to keep the screen awake.
 
+## Install
+
+On an ai-space Space: `space app install clock`, or from the panel's app catalog. Every release's `.spaceapp` packages are on the [GitHub releases](https://github.com/ericz-lab/clock/releases).
+
 ## Run locally
 
 ```bash

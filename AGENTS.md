@@ -19,7 +19,10 @@ Read this before touching code. Users read [README.md](README.md). This reposito
 ## Directory map
 
 ```
-space.yaml           * manifest: identity, service, deploy checks
+space.yaml           * manifest: identity, service, deploy checks (git deployment, spec 1)
+space.release.yaml   * the app store package (spec 2): version, launch, build
+.github/workflows/     release.yml: tag v<version> -> signed .spaceapp on the GitHub release
+scripts/pack.ts        local `bun run pack`
 src/index.ts           boot, SIGTERM
 src/app.ts           * routes (allowlist)
 src/*.test.ts          routes; word clock grids and phrases; zones
@@ -54,6 +57,8 @@ Provided by ai-space: `PORT`. Nothing else is read.
 - A new app's first deploy also needs `space app sync` on that host, which registers the directory.
 - Public URL: the space router's wildcard hostname `clock.<SPACE_DOMAIN>` (manifest `url: /?lang={lang}`), behind the space's access layer.
 - Source: GitHub `ericz-lab/clock` (public, MIT, remote `origin`). After a deploy, `git push origin main`.
+- App store: `space.release.yaml` (spec 2) is the package; it must carry `space.yaml`'s components minus `service`/`url`/`deploy` (`src/release.test.ts`). To release: raise `version` there and in `package.json`, commit, tag `v<version>`, push the tag; `.github/workflows/release.yml` builds `dist/` (`bun run build`), packs `dist`, `web` and `icon.svg`, signs with the `SPACE_SIGN_KEY` secret and attaches the `.spaceapp` files to the GitHub release. Then the catalog (`ericz-lab/ai-space-apps`) lists the new version. `bun run pack` (with `SPACE_CLI` pointing at an ai-space that has `app release`) builds the same packages locally.
+- The bundle serves files relative to `import.meta.dir/..`, so `dist/index.js` finds `web/` and `icon.svg` beside it; never use `new URL(..., import.meta.url).pathname` (breaks on Windows).
 - Keep `bun.lock` at `"lockfileVersion": 1` while a host runs Bun 1.3.
 
 ## Known pitfalls
